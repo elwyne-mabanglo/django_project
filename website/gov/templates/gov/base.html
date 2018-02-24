@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -20,7 +20,7 @@
     <!-- Latest compiled JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="{% static 'music/style.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'gov/style.css' %}" />
 </head>
 
 <body>
@@ -50,8 +50,13 @@
 
                 <ul class="nav navbar-nav navbar-right">
                     <li class="">
+                        <a href="{% url 'gov:gov-add' %}">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp; Data
+                        </a>
+                    </li>
+                    <li class="">
                         <a href="#">
-                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp; Add Album
+                            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>&nbsp; File
                         </a>
                     </li>
                 </ul>
