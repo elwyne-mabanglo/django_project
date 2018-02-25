@@ -5,8 +5,7 @@ from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy, reverse
 from .models import Data
 import logging
-import sys
-import csv
+from datetime import datetime
 
 class IndexView(generic.ListView):
     template_name = 'gov/index.html'
@@ -47,7 +46,31 @@ def upload_csv(request):
         
         if (len(fields) > 1):
 
-            #try:
+            startIndex = endIndex = len(fields) - 1
+            # combine inner delimiters that use double-quotes (")
+            for element, index in fields:
+                if element.startsWith('"'):
+                    startIndex = index
+                    break;
+
+            collapsedStr = ''
+            for element, index in fields[startIndex:]:
+                if element.endsWith('"'):
+                    collapsedStr += element
+                    endIndex = index
+                    break
+
+            if (startIndex != endIndex and startIndex != len(fields) - 1):
+                # array.slice notation: array[start:end]
+                # firstPart = fields[:startIndex]
+                # secondPart = collapsedStr
+                # lastPart = fields[endIndex:]
+
+            # format dates
+            format = '%d-%b-%y'
+            start_date = datetime.strptime(fields[7], format)
+            end_date = datetime.strptime(fields[8], format)
+            
             m = Data(
                 property_name = fields[0],
                 property_address1 = fields[1],
@@ -56,15 +79,12 @@ def upload_csv(request):
                 property_address4 = fields[4],
                 unit_name = fields[5],
                 tenant_name = fields[6],
-                lease_start_date = "2012-01-02", #fields[7],
-                lease_end_date = "2012-01-02", #fields[8],
+                lease_start_date = start_date,
+                lease_end_date = end_date,
                 lease_years = fields[9],
                 current_rent = fields[10]
             )
          
             m.save()
-            #except:
-            #    err = sys.exc_info()[0]
-            #    return HttpResponse(f'line: {line} ; fields: {fields}, error: {err}')
 
     return HttpResponseRedirect(reverse("gov:index"))
