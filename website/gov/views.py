@@ -5,7 +5,7 @@ from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy, reverse
 from .models import Data
 import logging
-from datetime import datetime
+import datetime
 import re, csv
 from django.db.models import Sum
 
@@ -15,8 +15,12 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         #return Data.objects.all()[:5]
+        start_date = datetime.date(1999 , 6, 1)
+        end_date = datetime.date(2007, 3, 31)
+        #Data.objects.filter(lease_start_date__range=(start_date, end_date))
         return [
-            Data.objects.order_by("-lease_years") ,
+            Data.objects.filter(lease_start_date__range=(start_date, end_date)),
+            #Data.objects.order_by("-lease_years") ,
             Data.objects.aggregate(Sum('current_rent'))
         ]
 
