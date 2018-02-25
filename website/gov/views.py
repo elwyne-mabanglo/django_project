@@ -18,28 +18,28 @@ class CountView(generic.ListView):
         tenant_list = Data.objects.all().values('tenant_name').annotate(total=Count('tenant_name'))
 
         aggregated_tenants = {
-            'Arqiva': [],
-            'Cornerstone': [],
-            'Everything_Everywhere': [],
-            'Everything_Everywhere_and_Hutchinsion': [],
-            'O2': [],
-            'Vodafone': []
+            'Arqiva Services Ltd': [],
+            'Cornerstone Telecommunications Infrastructure': [],
+            'Everything Everywhere Ltd': [],
+            'Everything Everywhere Ltd & Hutchinson 3G UK': [],
+            'O2 (UK) Ltd': [],
+            'Vodafone Ltd': []
         }
 
         for tenant_and_masts in tenant_list:
             name = tenant_and_masts['tenant_name']
             if 'Arqiva' in name:
-                aggregated_tenants['Arqiva'].append(tenant_and_masts)
+                aggregated_tenants['Arqiva Services Ltd'].append(tenant_and_masts)
             elif 'Cornerstone' in name:
-                aggregated_tenants['Cornerstone'].append(tenant_and_masts)
+                aggregated_tenants['Cornerstone Telecommunications Infrastructure'].append(tenant_and_masts)
             elif '&' in name:
-                aggregated_tenants['Everything_Everywhere_and_Hutchinsion'].append(tenant_and_masts)
+                aggregated_tenants['Everything Everywhere Ltd & Hutchinson 3G UK'].append(tenant_and_masts)
             elif 'Everything' in name:
-                aggregated_tenants['Everything_Everywhere'].append(tenant_and_masts)
+                aggregated_tenants['Everything Everywhere Ltd'].append(tenant_and_masts)
             elif 'O2' in name:
-                aggregated_tenants['O2'].append(tenant_and_masts)
+                aggregated_tenants['O2 (UK) Ltd'].append(tenant_and_masts)
             elif 'Vodafone' in name:
-                aggregated_tenants['Vodafone'].append(tenant_and_masts)
+                aggregated_tenants['Vodafone Ltd'].append(tenant_and_masts)
 
         all = [];
         for aggregated_tenant in aggregated_tenants:
@@ -51,9 +51,9 @@ class CountView(generic.ListView):
                 tenant_and_mast['total'] += tenant_and_masts['total']
             all.append(tenant_and_mast)
 
-        return all;
+        return [all,
+                Data.objects.aggregate(Sum('current_rent'))];
   
-
 class IndexView(generic.ListView):
     template_name = 'gov/index.html'
     context_object_name = 'all_data'
@@ -72,24 +72,27 @@ class LeaseDateView(generic.ListView):
 
 
         format = '%d-%b-%y'
-        start_date = datetime.strptime("01-Jun-90", format)
-        end_date = datetime.strptime("31-Mar-07", format)
+        start_date = datetime.strptime("01-Jun-99", format)
+        end_date = datetime.strptime("31-Aug-07", format)
 
-        return Data.objects.filter(lease_start_date__range=(start_date, end_date))
+        return [Data.objects.filter(lease_start_date__range=(start_date, end_date)),
+                Data.objects.aggregate(Sum('current_rent'))]
 
 class DescView(generic.ListView):
     template_name = 'gov/top.html'
     context_object_name = 'all_data'
 
     def get_queryset(self):
-        return Data.objects.order_by("-lease_years")[:5]
+        return [Data.objects.order_by("-lease_years")[:5],
+                Data.objects.aggregate(Sum('current_rent'))]
 
 class AscView(generic.ListView):
     template_name = 'gov/top.html'
     context_object_name = 'all_data'
 
     def get_queryset(self):
-        return Data.objects.order_by("lease_years")[:5]
+        return [Data.objects.order_by("lease_years")[:5],
+                Data.objects.aggregate(Sum('current_rent'))]
 
 class DataCreate(CreateView):
     model = Data
@@ -137,26 +140,6 @@ def upload_csv(request):
   
             def clean(field):
                 return field.strip()
-
-
-            #def normalise_tenant_name(name):
-            #    normalised_name =  re.sub(r'(?i)UK|\.|Services ', '', name) #name.replace(r'UK|\.|Services ', '')
-            #    return normalised_name
-
-            #tenant_exist = Data.objects.filter(tenant_name__icontains=row[6])
-            ## doesnt really work because it's not LIKE
-
-            #if len(tenant_exist) > 1:
-            #    tenant_exist = tenant_exist[0]
-            #else:
-            #    tenant_exist = row[6]
-
-
-            #tenant = clean(row[6])
-
-            #if tenant.findall("&"):
-
-
 
             m = Data(
                 property_name = clean(row[0]),
