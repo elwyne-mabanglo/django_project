@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿{% load humanize %}
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -69,7 +71,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li class="">
                         <a href="">
-                            <span class="glyphicon glyphicon-euro" aria-hidden="true"></span>&nbsp; Rent: {{ all_data.1.current_rent__sum }}
+                            <span aria-hidden="true"></span>&nbsp; Rent: £{{ all_data.1.current_rent__sum | intcomma }}
                         </a>
                     </li>
                     <li class="">

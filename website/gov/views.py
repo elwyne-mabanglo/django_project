@@ -15,9 +15,44 @@ class CountView(generic.ListView):
     context_object_name = 'all_data'
 
     def get_queryset(self):
-        return [
-            Data.objects.all().values('tenant_name').annotate(total=Count('tenant_name'))
-        ]
+        tenant_list = Data.objects.all().values('tenant_name').annotate(total=Count('tenant_name'))
+
+        aggregated_tenants = {
+            'Arqiva': [],
+            'Cornerstone': [],
+            'Everything_Everywhere': [],
+            'Everything_Everywhere_and_Hutchinsion': [],
+            'O2': [],
+            'Vodafone': []
+        }
+
+        for tenant_and_masts in tenant_list:
+            name = tenant_and_masts['tenant_name']
+            if 'Arqiva' in name:
+                aggregated_tenants['Arqiva'].append(tenant_and_masts)
+            elif 'Cornerstone' in name:
+                aggregated_tenants['Cornerstone'].append(tenant_and_masts)
+            elif '&' in name:
+                aggregated_tenants['Everything_Everywhere_and_Hutchinsion'].append(tenant_and_masts)
+            elif 'Everything' in name:
+                aggregated_tenants['Everything_Everywhere'].append(tenant_and_masts)
+            elif 'O2' in name:
+                aggregated_tenants['O2'].append(tenant_and_masts)
+            elif 'Vodafone' in name:
+                aggregated_tenants['Vodafone'].append(tenant_and_masts)
+
+        all = [];
+        for aggregated_tenant in aggregated_tenants:
+            tenant_and_mast = {
+                'tenant_name': aggregated_tenant,
+                'total': 0
+            }
+            for tenant_and_masts in aggregated_tenants[aggregated_tenant]:
+                tenant_and_mast['total'] += tenant_and_masts['total']
+            all.append(tenant_and_mast)
+
+        return all;
+  
 
 class IndexView(generic.ListView):
     template_name = 'gov/index.html'
@@ -99,18 +134,29 @@ def upload_csv(request):
             except:
                 return HttpResponse(row[7] + " " + row[8])
 
+  
             def clean(field):
-                unclean = field
-                cleaned = unclean.strip()
-                return cleaned
+                return field.strip()
 
-            
-            tenant_exist = Data.objects.filter(tenant_name__icontains=row[6])
 
-            if len(tenant_exist) > 1:
-                tenant_exist = tenant_exist[0]
-            else:
-                tenant_exist = row[6]
+            #def normalise_tenant_name(name):
+            #    normalised_name =  re.sub(r'(?i)UK|\.|Services ', '', name) #name.replace(r'UK|\.|Services ', '')
+            #    return normalised_name
+
+            #tenant_exist = Data.objects.filter(tenant_name__icontains=row[6])
+            ## doesnt really work because it's not LIKE
+
+            #if len(tenant_exist) > 1:
+            #    tenant_exist = tenant_exist[0]
+            #else:
+            #    tenant_exist = row[6]
+
+
+            #tenant = clean(row[6])
+
+            #if tenant.findall("&"):
+
+
 
             m = Data(
                 property_name = clean(row[0]),
@@ -119,7 +165,7 @@ def upload_csv(request):
                 property_address3 = clean(row[3]),
                 property_address4 = clean(row[4]),
                 unit_name = clean(row[5]),
-                tenant_name = tenant_exist,
+                tenant_name = clean(row[6]),
                 lease_start_date = start_date,
                 lease_end_date = end_date,
                 lease_years = row[9],
