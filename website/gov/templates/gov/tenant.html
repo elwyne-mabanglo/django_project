@@ -1,0 +1,25 @@
+{% extends 'gov/base.html' %}
+
+{% block body %}
+
+
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Tenant Name</th>
+            <th>Count of Masts </th>
+        </tr>
+    </thead>
+    <tbody>
+
+        {% for data in all_data.0 %}
+        <tr>
+            <td>{{ data.tenant_name }}</td>
+            <td>{{ data.total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

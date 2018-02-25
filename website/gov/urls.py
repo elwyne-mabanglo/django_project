@@ -11,4 +11,5 @@ urlpatterns = [
     path('lease', views.LeaseDateView.as_view(), name='lease'),
     path('add', views.DataCreate.as_view(), name='gov-add'),
     path('upload', views.upload_csv, name='upload_csv'),
+    path('count', views.CountView.as_view(), name='count'),
 ]

@@ -5,22 +5,27 @@ from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy, reverse
 from .models import Data
 import logging
-import datetime
 import re, csv
 from django.db.models import Sum
+from django.db.models import Count
+from datetime import datetime
+
+class CountView(generic.ListView):
+    template_name = 'gov/tenant.html'
+    context_object_name = 'all_data'
+
+    def get_queryset(self):
+        return [
+            Data.objects.all().values('tenant_name').annotate(total=Count('tenant_name'))
+        ]
 
 class IndexView(generic.ListView):
     template_name = 'gov/index.html'
     context_object_name = 'all_data'
 
     def get_queryset(self):
-        #return Data.objects.all()[:5]
-        #start_date = datetime.date(1999 , 6, 1)
-        #end_date = datetime.date(2007, 3, 31)
- 
         return [
-            #Data.objects.filter(lease_start_date__range=(start_date, end_date)),
-            Data.objects.order_by("-lease_years") ,
+            Data.objects.order_by("lease_years") ,
             Data.objects.aggregate(Sum('current_rent'))
         ]
 
@@ -30,11 +35,12 @@ class LeaseDateView(generic.ListView):
 
     def get_queryset(self):
 
-        start_date = datetime.date(1999 , 6, 1)
-        end_date = datetime.date(2007, 3, 31)
- 
+
+        format = '%d-%b-%y'
+        start_date = datetime.strptime("01-Jun-90", format)
+        end_date = datetime.strptime("31-Mar-07", format)
+
         return Data.objects.filter(lease_start_date__range=(start_date, end_date))
-        
 
 class DescView(generic.ListView):
     template_name = 'gov/top.html'
@@ -86,21 +92,34 @@ def upload_csv(request):
         if len(row) > 1:
 
             try:
-                # format dates
+                 #format dates
                 format = '%d-%b-%y'
                 start_date = datetime.strptime(row[7], format)
                 end_date = datetime.strptime(row[8], format)
             except:
                 return HttpResponse(row[7] + " " + row[8])
 
+            def clean(field):
+                unclean = field
+                cleaned = unclean.strip()
+                return cleaned
+
+            
+            tenant_exist = Data.objects.filter(tenant_name__icontains=row[6])
+
+            if len(tenant_exist) > 1:
+                tenant_exist = tenant_exist[0]
+            else:
+                tenant_exist = row[6]
+
             m = Data(
-                property_name = row[0],
-                property_address1 = row[1],
-                property_address2 = row[2],
-                property_address3 = row[3],
-                property_address4 = row[4],
-                unit_name = row[5],
-                tenant_name = row[6],
+                property_name = clean(row[0]),
+                property_address1 = clean(row[1]),
+                property_address2 = clean(row[2]),
+                property_address3 = clean(row[3]),
+                property_address4 = clean(row[4]),
+                unit_name = clean(row[5]),
+                tenant_name = tenant_exist,
                 lease_start_date = start_date,
                 lease_end_date = end_date,
                 lease_years = row[9],
@@ -110,3 +129,5 @@ def upload_csv(request):
             m.save()
   
     return HttpResponseRedirect(reverse("gov:index"))
+
+    
