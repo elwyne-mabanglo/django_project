@@ -7,6 +7,7 @@ from .models import Data
 import logging
 from datetime import datetime
 import re, csv
+from django.db.models import Sum
 
 class IndexView(generic.ListView):
     template_name = 'gov/index.html'
@@ -14,7 +15,10 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         #return Data.objects.all()[:5]
-        return Data.objects.order_by("-lease_years")
+        return [
+            Data.objects.order_by("-lease_years") ,
+            Data.objects.aggregate(Sum('current_rent'))
+        ]
 
 #class AscView(generic.ListView):
 #    template_name = 'gov/index.html'
