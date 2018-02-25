@@ -6,6 +6,7 @@ app_name = 'gov'
 
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
+    #path('asc', views.AscView.as_view(), name='asc'),
     path('add', views.DataCreate.as_view(), name='gov-add'),
     path('upload', views.upload_csv, name='upload_csv'),
 ]
