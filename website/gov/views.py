@@ -4,7 +4,6 @@ from django.views import generic
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy, reverse
 from .models import Data
-import logging
 import re, csv
 from django.db.models import Sum
 from django.db.models import Count
@@ -15,8 +14,11 @@ class CountView(generic.ListView):
     context_object_name = 'all_data'
 
     def get_queryset(self):
+
+        # get count data by tenant
         tenant_list = Data.objects.all().values('tenant_name').annotate(total=Count('tenant_name'))
 
+        # create object with tenants
         aggregated_tenants = {
             'Arqiva Services Ltd': [],
             'Cornerstone Telecommunications Infrastructure': [],
@@ -26,6 +28,7 @@ class CountView(generic.ListView):
             'Vodafone Ltd': []
         }
 
+        # match tenant list with string and append data to object
         for tenant_and_masts in tenant_list:
             name = tenant_and_masts['tenant_name']
             if 'Arqiva' in name:
@@ -42,6 +45,8 @@ class CountView(generic.ListView):
                 aggregated_tenants['Vodafone Ltd'].append(tenant_and_masts)
 
         all = [];
+
+        # combine tenates values and store in all
         for aggregated_tenant in aggregated_tenants:
             tenant_and_mast = {
                 'tenant_name': aggregated_tenant,
@@ -51,48 +56,44 @@ class CountView(generic.ListView):
                 tenant_and_mast['total'] += tenant_and_masts['total']
             all.append(tenant_and_mast)
 
-        return [all,
-                Data.objects.aggregate(Sum('current_rent'))];
+        return [all, # all tenants with total value 
+                Data.objects.aggregate(Sum('current_rent'))]; # query sum rent
   
 class IndexView(generic.ListView):
     template_name = 'gov/index.html'
     context_object_name = 'all_data'
-
     def get_queryset(self):
         return [
-            Data.objects.order_by("lease_years") ,
-            Data.objects.aggregate(Sum('current_rent'))
+            Data.objects.order_by("lease_years") , # query aAll data order by ascending
+            Data.objects.aggregate(Sum('current_rent')) # query sum rent
         ]
 
 class LeaseDateView(generic.ListView):
+    # view returns data between 01-Jine-99 and 31-Aug-07 and total rent
     template_name = 'gov/lease_date.html'
     context_object_name = 'all_data'
-
-    def get_queryset(self):
-
-
-        format = '%d-%b-%y'
-        start_date = datetime.strptime("01-Jun-99", format)
-        end_date = datetime.strptime("31-Aug-07", format)
-
-        return [Data.objects.filter(lease_start_date__range=(start_date, end_date)),
-                Data.objects.aggregate(Sum('current_rent'))]
+    def get_queryset(self):       
+        format = '%d-%b-%y' # data format
+        start_date = datetime.strptime("01-Jun-99", format) # start date
+        end_date = datetime.strptime("31-Aug-07", format) # end date
+        return [Data.objects.filter(lease_start_date__range=(start_date, end_date)), # query data between
+                Data.objects.aggregate(Sum('current_rent'))] # query sum rent
 
 class DescView(generic.ListView):
-    template_name = 'gov/top.html'
+    # view returns lease years in order of descending limited by 5 and total rent
+    template_name = 'gov/top.html' 
     context_object_name = 'all_data'
-
     def get_queryset(self):
-        return [Data.objects.order_by("-lease_years")[:5],
-                Data.objects.aggregate(Sum('current_rent'))]
+        return [Data.objects.order_by("-lease_years")[:5], # query lease descending limited 5
+                Data.objects.aggregate(Sum('current_rent'))] # query sum rent
 
 class AscView(generic.ListView):
+    # view returns lease years in order of ascending limited by 5 and total rent
     template_name = 'gov/top.html'
     context_object_name = 'all_data'
-
     def get_queryset(self):
-        return [Data.objects.order_by("lease_years")[:5],
-                Data.objects.aggregate(Sum('current_rent'))]
+        return [Data.objects.order_by("lease_years")[:5], # query lease ascending limited 5
+                Data.objects.aggregate(Sum('current_rent'))] # query sum rent
 
 class DataCreate(CreateView):
     model = Data
@@ -108,13 +109,16 @@ def upload_csv(request):
     # if not GET, then proceed
 
     csv_file = request.FILES["csv_file"]
+
+    # check file type
     if not csv_file.name.endswith('.csv'):
         return HttpResponseRedirect(reverse("gov:upload_csv"))
 
-    #if file is too large, return
+    # check file size
     if csv_file.multiple_chunks():
         return HttpResponseRedirect(reverse("gov:upload_csv"))
     
+
     file_data = csv_file.read().decode("utf-8")     
 
     lines = file_data.split("\r\n")
@@ -129,18 +133,18 @@ def upload_csv(request):
         # ignore first row
         if len(row) > 1:
 
-            try:
-                 #format dates
-                format = '%d-%b-%y'
-                start_date = datetime.strptime(row[7], format)
-                end_date = datetime.strptime(row[8], format)
-            except:
-                return HttpResponse(row[7] + " " + row[8])
+ 
+             # format dates
+            format = '%d-%b-%y'
+            start_date = datetime.strptime(row[7], format)
+            end_date = datetime.strptime(row[8], format)
 
-  
+
+            # clean fields
             def clean(field):
                 return field.strip()
 
+            # store in Data object
             m = Data(
                 property_name = clean(row[0]),
                 property_address1 = clean(row[1]),
@@ -156,7 +160,8 @@ def upload_csv(request):
             )
 
             m.save()
-  
+    
+    # return to home page
     return HttpResponseRedirect(reverse("gov:index"))
 
     

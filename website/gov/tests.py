@@ -4,6 +4,7 @@ from django.urls import reverse
 
 class DataestCase(TestCase):
 
+    # Model Test #1
     def create_mast(self):
         Data.objects.create(
             property_name = 'Great Wall',
@@ -19,10 +20,14 @@ class DataestCase(TestCase):
             current_rent = 2000
     )
 
+    # Model Test #2
+    def test_string_representation(self):
+        test = Data(tenant_name="Bob")
+        self.assertEqual(str(test), test.tenant_name)
 
-
-    def test_mast(self):
-        property_name = Data.objects.get(property_name="Great Wall")
-        #self.assertEqual(property_name.property_address1(), '"Ralphs"')
+    # Views and Templates Test #1
+    def test_homepage(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
 
 

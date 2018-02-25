@@ -3,6 +3,8 @@ from django.urls import reverse
 import datetime
 
 class Data(models.Model):
+
+    # Data Model
     property_name = models.CharField(default="",max_length=1000, blank=True)
     property_address1 = models.CharField(default="",max_length=1000, blank=True)
     property_address2 = models.CharField(default="",max_length=1000, blank=True)
