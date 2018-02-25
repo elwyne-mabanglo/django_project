@@ -15,14 +15,26 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         #return Data.objects.all()[:5]
-        start_date = datetime.date(1999 , 6, 1)
-        end_date = datetime.date(2007, 3, 31)
-        #Data.objects.filter(lease_start_date__range=(start_date, end_date))
+        #start_date = datetime.date(1999 , 6, 1)
+        #end_date = datetime.date(2007, 3, 31)
+ 
         return [
-            Data.objects.filter(lease_start_date__range=(start_date, end_date)),
-            #Data.objects.order_by("-lease_years") ,
+            #Data.objects.filter(lease_start_date__range=(start_date, end_date)),
+            Data.objects.order_by("-lease_years") ,
             Data.objects.aggregate(Sum('current_rent'))
         ]
+
+class LeaseDateView(generic.ListView):
+    template_name = 'gov/lease_date.html'
+    context_object_name = 'all_data'
+
+    def get_queryset(self):
+
+        start_date = datetime.date(1999 , 6, 1)
+        end_date = datetime.date(2007, 3, 31)
+ 
+        return Data.objects.filter(lease_start_date__range=(start_date, end_date))
+        
 
 class DescView(generic.ListView):
     template_name = 'gov/top.html'
