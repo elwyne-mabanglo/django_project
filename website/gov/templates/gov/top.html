@@ -1,0 +1,48 @@
+{% extends 'gov/base.html' %}
+
+
+
+
+
+
+{% block body %}
+
+<a href="{% if request.path == '/asc' %}{% url 'gov:desc' %}{% else %}{% url 'gov:asc' %}{% endif %}"<button>{% if request.path == '/asc' %}Desc{% else %}Asc{% endif %}</button></a>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Property Name</th>
+            <th>Property Address [1]</th>
+            <th>Property Address [2]</th>
+            <th>Property Address [3]</th>
+            <th>Property Address [4]</th>
+            <th>Unit Name</th>
+            <th>Tenant Name</th>
+            <th>Lease Start Date</th>
+            <th>Lease End Date</th>
+            <th>Lease Years</th>
+            <th>Current Rent</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        {% for data in all_data %}
+        <tr>
+            <td>{{ data.property_name }}</td>
+            <td>{{ data.property_address1 }}</td>
+            <td>{{ data.property_address2 }}</td>
+            <td>{{ data.property_address3 }}</td>
+            <td>{{ data.property_address4 }}</td>
+            <td>{{ data.unit_name }}</td>
+            <td>{{ data.tenant_name }}</td>
+            <td>{{ data.lease_start_date }}</td>
+            <td>{{ data.lease_end_date }}</td>
+            <td>{{ data.lease_years }}</td>
+            <td>{{ data.current_rent }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

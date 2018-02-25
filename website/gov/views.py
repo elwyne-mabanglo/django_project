@@ -20,13 +20,19 @@ class IndexView(generic.ListView):
             Data.objects.aggregate(Sum('current_rent'))
         ]
 
-#class AscView(generic.ListView):
-#    template_name = 'gov/index.html'
-#    context_object_name = 'all_data'
+class DescView(generic.ListView):
+    template_name = 'gov/top.html'
+    context_object_name = 'all_data'
 
-#    def get_queryset(self):
-#        #return Data.objects.all()[:5]
-#        return Data.objects.order_by("current_rent")[:5]
+    def get_queryset(self):
+        return Data.objects.order_by("lease_years")[:5]
+
+class AscView(generic.ListView):
+    template_name = 'gov/top.html'
+    context_object_name = 'all_data'
+
+    def get_queryset(self):
+        return Data.objects.order_by("-lease_years")[:5]
 
 class DataCreate(CreateView):
     model = Data
