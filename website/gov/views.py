@@ -6,6 +6,7 @@ from django.urls import reverse_lazy, reverse
 from .models import Data
 import logging
 from datetime import datetime
+import re, csv
 
 class IndexView(generic.ListView):
     template_name = 'gov/index.html'
@@ -39,52 +40,119 @@ def upload_csv(request):
     file_data = csv_file.read().decode("utf-8")     
 
     lines = file_data.split("\r\n")
-    
-    for line in lines[1:]:        
 
-        fields = line.split(",")
-        
-        if (len(fields) > 1):
+    reader = csv.reader(lines, skipinitialspace=True)
 
-            startIndex = endIndex = len(fields) - 1
-            # combine inner delimiters that use double-quotes (")
-            for element, index in fields:
-                if element.startsWith('"'):
-                    startIndex = index
-                    break;
+    next(reader)
 
-            collapsedStr = ''
-            for element, index in fields[startIndex:]:
-                if element.endsWith('"'):
-                    collapsedStr += element
-                    endIndex = index
-                    break
+    for row in reader:
 
-            if (startIndex != endIndex and startIndex != len(fields) - 1):
-                # array.slice notation: array[start:end]
-                # firstPart = fields[:startIndex]
-                # secondPart = collapsedStr
-                # lastPart = fields[endIndex:]
+        if len(row) > 1:
 
-            # format dates
-            format = '%d-%b-%y'
-            start_date = datetime.strptime(fields[7], format)
-            end_date = datetime.strptime(fields[8], format)
-            
+            try:
+                # format dates
+                format = '%d-%b-%y'
+                start_date = datetime.strptime(row[7], format)
+                end_date = datetime.strptime(row[8], format)
+            except:
+                return HttpResponse(row[7] + " " + row[8])
+
             m = Data(
-                property_name = fields[0],
-                property_address1 = fields[1],
-                property_address2 = fields[2],
-                property_address3 = fields[3],
-                property_address4 = fields[4],
-                unit_name = fields[5],
-                tenant_name = fields[6],
-                lease_start_date = start_date,
-                lease_end_date = end_date,
-                lease_years = fields[9],
-                current_rent = fields[10]
+                property_name = row[0],
+                property_address1 = row[1],
+                property_address2 = row[2],
+                property_address3 = row[3],
+                property_address4 = row[4],
+                unit_name = row[5],
+                tenant_name = row[6],
+                lease_start_date = "2011-02-02",
+                lease_end_date = "2011-02-02",
+                lease_years = row[9],
+                current_rent = row[10]
             )
-         
-            m.save()
 
+            m.save()
+  
     return HttpResponseRedirect(reverse("gov:index"))
+
+            #property_name = row['Property Name']
+            #property_address1 = row['Property Address [1]']
+            #property_address2 = row['Property  Address [2]']
+            #property_address3 = row['Property Address [3]']
+            #property_address4 = row['Property Address [4]']
+            #unit_name = row['Unit Name'],
+            #tenant_name = row['Tenant Name'],
+            #lease_start_date = row['Lease Start Date'],
+            #lease_end_date = row['Lease End Date'],
+            #lease_years = row['Lease Years'],
+            #current_rent = row['Current Rent']
+            
+            #m = Data(
+            #    property_name = property_name,
+            #    property_address1 = property_address1,
+            #    property_address2 = property_address2,
+            #    property_address3 = property_address3,
+            #    property_address4 = property_address4,
+            #    unit_name = unit_name,
+            #    tenant_name = tenant_name,
+            #    lease_start_date = lease_start_date,
+            #    lease_end_date = lease_end_date,
+            #    lease_years = lease_years,
+            #    current_rent = current_rent
+            #)
+
+            #m.save()
+
+
+
+    #for line in lines[1:]:        
+
+    #    fields = line.split(",")
+        
+    #    return HttpResponse(fields)
+
+    #    if (len(fields) > 1):   
+
+
+    #        #startIndex = endIndex = len(fields) - 1
+    #        ## combine inner delimiters that use double-quotes (")
+    #        #for element, index in fields:
+    #        #    if element.startsWith('"'):
+    #        #        startIndex = index
+    #        #        break;
+
+    #        #collapsedStr = ''
+    #        #for element, index in fields[startIndex:]:
+    #        #    if element.endsWith('"'):
+    #        #        collapsedStr += element
+    #        #        endIndex = index
+    #        #        break
+
+    #        #if (startIndex != endIndex and startIndex != len(fields) - 1):
+    #        #    # array.slice notation: array[start:end]
+    #        #    # firstPart = fields[:startIndex]
+    #        #    # secondPart = collapsedStr
+    #        #    # lastPart = fields[endIndex:]
+
+    #        # format dates
+    #        format = '%d-%b-%y'
+    #        start_date = datetime.strptime(fields[7], format)
+    #        end_date = datetime.strptime(fields[8], format)
+            
+    #        m = Data(
+    #            property_name = fields[0],
+    #            property_address1 = fields[1],
+    #            property_address2 = fields[2],
+    #            property_address3 = fields[3],
+    #            property_address4 = fields[4],
+    #            unit_name = fields[5],
+    #            tenant_name = fields[6],
+    #            lease_start_date = start_date,
+    #            lease_end_date = end_date,
+    #            lease_years = fields[9],
+    #            current_rent = fields[10]
+    #        )
+         
+    #        m.save()
+
+    #return HttpResponseRedirect(reverse("gov:index"))
