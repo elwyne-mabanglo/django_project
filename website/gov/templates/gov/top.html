@@ -7,7 +7,18 @@
 
 {% block body %}
 
-<a href="{% if request.path == '/asc' %}{% url 'gov:desc' %}{% else %}{% url 'gov:asc' %}{% endif %}"<button>{% if request.path == '/asc' %}Desc{% else %}Asc{% endif %}</button></a>
+
+<center>
+    <button type="button" class="btn btn-primary" onclick="location.href = '{% if request.path == '/asc' %}{% url 'gov:desc' %}{% else %}{% url 'gov:asc' %}{% endif %}';">
+        Sort Lease Years by 
+        {% if request.path == '/asc' %}
+            Descending
+        {% else %}
+            Ascending
+        {% endif %}
+
+    </button>
+</center>
 
 <table class="table table-hover">
     <thead>

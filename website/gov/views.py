@@ -25,14 +25,14 @@ class DescView(generic.ListView):
     context_object_name = 'all_data'
 
     def get_queryset(self):
-        return Data.objects.order_by("lease_years")[:5]
+        return Data.objects.order_by("-lease_years")[:5]
 
 class AscView(generic.ListView):
     template_name = 'gov/top.html'
     context_object_name = 'all_data'
 
     def get_queryset(self):
-        return Data.objects.order_by("-lease_years")[:5]
+        return Data.objects.order_by("lease_years")[:5]
 
 class DataCreate(CreateView):
     model = Data
