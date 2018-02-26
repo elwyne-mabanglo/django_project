@@ -96,6 +96,7 @@ class AscView(generic.ListView):
                 Data.objects.aggregate(Sum('current_rent'))] # query sum rent
 
 class DataCreate(CreateView):
+    # view for creating a display form for adding new data
     model = Data
     fields = ['property_name','property_address1','property_address2','property_address3','property_address4',
               'unit_name','tenant_name','lease_start_date','lease_end_date','lease_years','current_rent']
